@@ -12,6 +12,7 @@ from sklearn.pipeline import Pipeline
 
 app = FastAPI(title="Biometric Security Gateway")
 
+# عبارة المرور الجديدة والمحونة أمنياً
 TARGET_PASSPHRASE = "Project Alpha 2026"
 MODEL_PATH = "biometric_model.pkl"
 
@@ -40,9 +41,9 @@ class SystemState:
                     pipe.fit(df_train)
                     self.model = pipe
                     self.features = list(df_train.columns)
-                print("Security model loaded successfully!")
+                print("Security Model Loaded Successfully!")
             except Exception as e:
-                print(f"Error loading model: {e}")
+                print(f"Error Loading Model: {e}")
                 self.init_fallback()
         else:
             self.init_fallback()
@@ -95,7 +96,7 @@ def serve_portal():
     if os.path.exists("portal.html"):
         with open("portal.html", "r", encoding="utf-8") as f:
             return f.read()
-    return "<h1 style='color:black;text-align:center;'>portal.html is missing.</h1>"
+    return "<h1 style='color:black;text-align:center;'>portal.html is missing</h1>"
 
 @app.post("/api/verify")
 def verify_attempt(payload: VerifyPayload):
@@ -110,7 +111,7 @@ def verify_attempt(payload: VerifyPayload):
     pred = int(state.model.predict(df_eval)[0])
     score = float(state.model.decision_function(df_eval)[0])
     
-    # حماية أمنية حقيقية: السماح فقط لمن يقع داخل البصمة المعتمدة
+    # قرار أمني صارم يعتمد على تطابق البصمة الحركية
     is_auth = (pred == 1)
 
     return {
@@ -123,7 +124,7 @@ def verify_attempt(payload: VerifyPayload):
 @app.post("/api/enroll")
 def enroll_user(payload: EnrollPayload):
     if not payload.attempts:
-        return {"success": False, "message": "No attempts"}
+        return {"success": False, "message": "No Attempts"}
 
     training_rows = [extract_features(a) for a in payload.attempts]
     df_train = pd.DataFrame(training_rows).fillna(0)
