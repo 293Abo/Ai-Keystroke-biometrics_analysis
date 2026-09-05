@@ -30,15 +30,15 @@ class SystemState:
                 self.features = artifact['features']
                 return
             except Exception as e:
-                print(f"Error: {e}")
+                print(f"Error loading model: {e}")
 
-        # بناء خط احتياطي مطابق للخلية 6 في كولاب
+        # بناء خط احتياطي مطابق لبيئة Colab
         self.features = ['dwell_ratio', 'avg_hold_ratio', 'std_hold_ratio', 'avg_flight_ratio', 'std_flight_ratio'] + [f'rel_digraph_{i}' for i in range(1, 12)]
         pipe = Pipeline([
             ('scaler', RobustScaler()),
             ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.15))
         ])
-        dummy = np.random.normal(0.2, 0.03, (15, len(self.features)))
+        dummy = np.random.normal(0.25, 0.04, (15, len(self.features)))
         pipe.fit(pd.DataFrame(dummy, columns=self.features))
         self.model = pipe
 
@@ -52,11 +52,11 @@ class EnrollPayload(BaseModel):
     attempts: List[List[Dict[str, Any]]]
 
 def extract_features(keystrokes: List[Dict[str, Any]]) -> Dict[str, float]:
-    holds = [k['hold'] for k in keystrokes]
-    flights = [k['flight'] for k in keystrokes]
+    holds = [float(k['hold']) for k in keystrokes]
+    flights = [float(k['flight']) for k in keystrokes]
 
     total_hold = float(np.sum(holds))
-    total_flight = float(np.sum(flights[1:]))
+    total_flight = float(np.sum(flights[1:])) if len(flights) > 1 else 0.001
     total_time = total_hold + total_flight
 
     dwell_ratio = total_hold / max(0.0001, total_flight)
@@ -65,10 +65,10 @@ def extract_features(keystrokes: List[Dict[str, Any]]) -> Dict[str, float]:
 
     f_dict = {
         'dwell_ratio': dwell_ratio,
-        'avg_hold_ratio': float(np.mean(relative_holds)),
-        'std_hold_ratio': float(np.std(relative_holds)),
-        'avg_flight_ratio': float(np.mean(relative_flights)),
-        'std_flight_ratio': float(np.std(relative_flights))
+        'avg_hold_ratio': float(np.mean(relative_holds)) if relative_holds else 0.0,
+        'std_hold_ratio': float(np.std(relative_holds)) if relative_holds else 0.0,
+        'avg_flight_ratio': float(np.mean(relative_flights)) if relative_flights else 0.0,
+        'std_flight_ratio': float(np.std(relative_flights)) if relative_flights else 0.0
     }
 
     for i, rel_f in enumerate(relative_flights):
@@ -78,8 +78,13 @@ def extract_features(keystrokes: List[Dict[str, Any]]) -> Dict[str, float]:
 
 @app.post("/api/verify")
 def verify_attempt(payload: VerifyPayload):
-    if len(payload.keystrokes) < len(TARGET_PASSPHRASE):
-        return {"authorized": False, "score": -1.0, "message": "Incomplete input"}
+    if len(payload.keystrokes) < 10:
+        return {
+            "authorized": False, 
+            "score": -1.0, 
+            "dwell_ratio": 0.0, 
+            "owner": state.owner_name
+        }
 
     feat_dict = extract_features(payload.keystrokes)
     df_eval = pd.DataFrame([feat_dict]).fillna(0)
