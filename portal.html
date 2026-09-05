@@ -1,141 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biometric Security Gateway</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-color: #000000;
-            --surface: rgba(26, 26, 30, 0.75);
-            --border: rgba(255, 255, 255, 0.12);
-            --apple-blue: #2997ff;
-            --apple-green: #30d158;
-            --apple-red: #ff453a;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'Plus Jakarta Sans', sans-serif; }
-        body {
-            background: var(--bg-color); color: #f5f5f7; min-height: 100vh; display: flex; flex-direction: column;
-            background-image: radial-gradient(circle at 50% 0%, rgba(41, 151, 255, 0.15) 0%, transparent 60%);
-        }
-        nav {
-            position: sticky; top: 0; z-index: 100; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border); display: flex; justify-content: center; padding: 14px 20px;
-        }
-        .nav-inner { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; }
-        .tabs { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.08); padding: 4px; border-radius: 99px; }
-        .tab-btn {
-            background: none; border: none; color: #86868b; padding: 8px 18px; font-size: 13px; font-weight: 500;
-            border-radius: 99px; cursor: pointer; transition: 0.2s;
-        }
-        .tab-btn.active { color: #fff; background: rgba(255, 255, 255, 0.16); }
-        main { flex: 1; display: flex; justify-content: center; padding: 40px 20px; }
-        .content { width: 100%; max-width: 800px; }
-        .card {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 26px;
-            backdrop-filter: blur(30px); padding: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-        }
-        h1 { font-size: 38px; font-weight: 700; text-align: center; margin-bottom: 8px; }
-        p.sub { color: #86868b; text-align: center; margin-bottom: 28px; font-size: 15px; }
-        .badge { display: table; margin: 0 auto 20px auto; background: rgba(41, 151, 255, 0.1); border: 1px solid rgba(41, 151, 255, 0.3); border-radius: 99px; padding: 6px 18px; color: var(--apple-blue); font-size: 13px; font-weight: 700; }
-        input[type="text"] {
-            width: 100%; padding: 18px; font-size: 18px; text-align: center; background: rgba(0, 0, 0, 0.4);
-            border: 1.5px solid rgba(255, 255, 255, 0.15); border-radius: 16px; color: #fff; outline: none; margin-bottom: 16px;
-        }
-        input[type="text"]:focus { border-color: var(--apple-blue); }
-        button.action {
-            width: 100%; padding: 16px; font-size: 15px; font-weight: 600; border-radius: 16px; border: none;
-            background: var(--apple-blue); color: #fff; cursor: pointer; transition: 0.2s;
-        }
-        button.action:hover { opacity: 0.9; }
-        .result { margin-top: 24px; padding: 20px; border-radius: 16px; display: none; }
-        .granted { background: rgba(48, 209, 88, 0.12); border: 1px solid rgba(48, 209, 88, 0.3); color: var(--apple-green); }
-        .denied { background: rgba(255, 69, 58, 0.12); border: 1px solid rgba(255, 69, 58, 0.3); color: var(--apple-red); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-        .cell { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; text-align: center; color: #86868b; font-size: 13px; }
-        .cell span { display: block; font-size: 18px; font-weight: 700; color: #fff; margin-top: 4px; }
-        .page-view { display: none; }
-        .page-view.active { display: block; }
-    </style>
-</head>
-<body>
-    <nav>
-        <div class="nav-inner">
-            <span style="font-weight: 700; font-size: 16px;"> Kinetic ID</span>
-            <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('gate')">Gateway</button>
-                <button class="tab-btn" onclick="showTab('train')">Studio</button>
-                <button class="tab-btn" onclick="showTab('stats')">Charts</button>
-                <button class="tab-btn" onclick="showTab('docs')">Docs</button>
-            </div>
-        </div>
-    </nav>
-
-    <main>
-        <div class="content">
-            <!-- PAGE 1: GATEWAY -->
-            <div id="p-gate" class="page-view active">
-                <div class="card">
-                    <div class="badge">PASSPHRASE: Welcome Guest</div>
-                    <h1>Biometric Terminal</h1>
-                    <p class="sub">Direct neuromuscular keyup/keydown capture validated by One-Class SVM</p>
-                    <input type="text" id="gInput" placeholder="Click and type 'Welcome Guest' naturally..." autocomplete="off">
-                    <button class="action" onclick="verifyGate()">⚡ Authenticate Cadence</button>
-
-                    <div id="gRes" class="result">
-                        <h3 id="rTitle"></h3>
-                        <p id="rDesc" style="font-size: 13px; margin-top: 4px;"></p>
-                        <div class="grid">
-                            <div class="cell">SVM Score<span id="sVal">-</span></div>
-                            <div class="cell">Dwell Ratio<span id="dVal">-</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PAGE 2: STUDIO -->
-            <div id="p-train" class="page-view">
-                <div class="card">
-                    <h1>Calibration Studio</h1>
-                    <p class="sub">Train a personalized One-Class SVM profile on your own rhythm</p>
-                    <input type="text" id="uName" style="text-align: left; font-size: 15px;" placeholder="Your Name...">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
-                        <span>Recorded Attempts</span>
-                        <b id="tCount" style="color: var(--apple-blue);">0 / 10</b>
-                    </div>
-                    <input type="text" id="tInput" placeholder="Type 'Welcome Guest' and press Enter..." autocomplete="off">
-                    <p id="tStatus" style="text-align: center; color: var(--apple-blue); font-size: 13px;"></p>
-                </div>
-            </div>
-
-            <!-- PAGE 3: CHARTS -->
-            <div id="p-stats" class="page-view">
-                <div class="card">
-                    <h1>CMU Benchmark</h1>
-                    <p class="sub">Empirical validation showing distinct separation of human keystroke clusters</p>
-                    <canvas id="cChart" height="150"></canvas>
-                </div>
-            </div>
-
-            <!-- PAGE 4: DOCS -->
-            <div id="p-docs" class="page-view">
-                <div class="card">
-                    <h1>Kinetic Formulation</h1>
-                    <p class="sub">Dimensionless temporal extraction & RBF hyperplane margin</p>
-                    <p style="color: #ccc; line-height: 1.6; font-size: 14px;">
-                        • <b>Hold Time:</b> Duration a key remains physically pressed down.<br>
-                        • <b>Flight Time:</b> Elapsed transition latency between consecutive keypresses.<br>
-                        • <b>Dwell Ratio:</b> Total hold time divided by total flight time (immune to pure speed).<br>
-                        • <b>Kernel:</b> Radial Basis Function (RBF) parameterized at &nu; = 0.15 and &gamma; = 0.01.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script>
+<script>
         const TARGET = "Welcome Guest";
 
         function showTab(t) {
@@ -147,10 +10,10 @@
         }
 
         // ==========================================
-        // 1. محرك التقاط المفاتيح للبوابة (Gateway)
+        // محرك التقاط المفاتيح المبسط والآمن للبوابة
         // ==========================================
-        let gDownTimes = [];
-        let gKeyLogs = [];
+        let pressTimers = {};
+        let currentAttemptEvents = [];
         const gInput = document.getElementById('gInput');
 
         gInput.addEventListener('keydown', (e) => {
@@ -159,22 +22,25 @@
                 verifyGate();
                 return;
             }
-            gDownTimes.push({ key: e.key, time: performance.now(), used: false });
+            // تسجيل وقت الضغط لكل مفتاح (بما فيه المسافة)
+            if (!pressTimers[e.code]) {
+                pressTimers[e.code] = {
+                    key: e.key,
+                    down: performance.now()
+                };
+            }
         });
 
         gInput.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') return;
-            const now = performance.now();
-            for (let i = gDownTimes.length - 1; i >= 0; i--) {
-                if (gDownTimes[i].key === e.key && !gDownTimes[i].used) {
-                    gDownTimes[i].used = true;
-                    gKeyLogs.push({
-                        key: e.key,
-                        down: gDownTimes[i].time,
-                        up: now
-                    });
-                    break;
-                }
+            const upTime = performance.now();
+            if (pressTimers[e.code]) {
+                currentAttemptEvents.push({
+                    key: pressTimers[e.code].key,
+                    down: pressTimers[e.code].down,
+                    up: upTime
+                });
+                delete pressTimers[e.code];
             }
         });
 
@@ -185,27 +51,21 @@
                 return;
             }
 
-            gKeyLogs.sort((a, b) => a.down - b.down);
-
-            let matched = [];
-            let tIdx = TARGET.length - 1;
-            for (let i = gKeyLogs.length - 1; i >= 0; i--) {
-                if (gKeyLogs[i].key === TARGET[tIdx]) {
-                    matched.unshift(gKeyLogs[i]);
-                    tIdx--;
-                    if (tIdx < 0) break;
-                }
-            }
-
-            if (matched.length < TARGET.length) {
-                alert("Keystrokes were incomplete. Please type naturally.");
+            if (currentAttemptEvents.length < TARGET.length) {
+                alert("Keystrokes incomplete. Please type naturally without pasting.");
+                gInput.value = '';
+                currentAttemptEvents = [];
+                pressTimers = {};
                 return;
             }
 
-            const keystrokesPayload = matched.map((k, idx) => ({
+            // اخذ آخر أحرف تطابق طول الكلمة تماماً
+            const matchedEvents = currentAttemptEvents.slice(-TARGET.length);
+
+            const keystrokesPayload = matchedEvents.map((k, idx) => ({
                 key: k.key,
                 hold: Math.max(0.01, (k.up - k.down) / 1000.0),
-                flight: idx > 0 ? Math.max(0.005, (k.down - matched[idx-1].up) / 1000.0) : 0.0
+                flight: idx > 0 ? Math.max(0.005, (k.down - matchedEvents[idx-1].up) / 1000.0) : 0.0
             }));
 
             try {
@@ -224,7 +84,7 @@
                 if (data.authorized) {
                     box.className = 'result granted';
                     document.getElementById('rTitle').innerText = '🟢 ACCESS GRANTED';
-                    document.getElementById('rDesc').innerText = `Verified Profile: ${data.owner}. Cadence aligns with the trained model.`;
+                    document.getElementById('rDesc').innerText = `Identity Confirmed: ${data.owner}. Cadence aligns with the trained model.`;
                 } else {
                     box.className = 'result denied';
                     document.getElementById('rTitle').innerText = '🔴 ACCESS DENIED';
@@ -234,16 +94,16 @@
                 alert("Server Connection Error: " + err);
             } finally {
                 gInput.value = '';
-                gDownTimes = [];
-                gKeyLogs = [];
+                currentAttemptEvents = [];
+                pressTimers = {};
             }
         }
 
         // ==========================================
-        // 2. محرك التدريب المباشر (Studio)
+        // محرك التدريب المباشر (Studio) المبسط
         // ==========================================
-        let tDownTimes = [];
-        let tKeyLogs = [];
+        let tPressTimers = {};
+        let tCurrentEvents = [];
         let userAttempts = [];
         const tInput = document.getElementById('tInput');
 
@@ -253,22 +113,21 @@
                 processEnroll();
                 return;
             }
-            tDownTimes.push({ key: e.key, time: performance.now(), used: false });
+            if (!tPressTimers[e.code]) {
+                tPressTimers[e.code] = { key: e.key, down: performance.now() };
+            }
         });
 
         tInput.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') return;
-            const now = performance.now();
-            for (let i = tDownTimes.length - 1; i >= 0; i--) {
-                if (tDownTimes[i].key === e.key && !tDownTimes[i].used) {
-                    tDownTimes[i].used = true;
-                    tKeyLogs.push({
-                        key: e.key,
-                        down: tDownTimes[i].time,
-                        up: now
-                    });
-                    break;
-                }
+            const upTime = performance.now();
+            if (tPressTimers[e.code]) {
+                tCurrentEvents.push({
+                    key: tPressTimers[e.code].key,
+                    down: tPressTimers[e.code].down,
+                    up: upTime
+                });
+                delete tPressTimers[e.code];
             }
         });
 
@@ -276,33 +135,30 @@
             if (tInput.value !== TARGET) {
                 alert("Type exact text: " + TARGET);
                 tInput.value = '';
-                tDownTimes = [];
-                tKeyLogs = [];
+                tCurrentEvents = [];
+                tPressTimers = {};
                 return;
             }
 
-            tKeyLogs.sort((a, b) => a.down - b.down);
-
-            let matched = [];
-            let tIdx = TARGET.length - 1;
-            for (let i = tKeyLogs.length - 1; i >= 0; i--) {
-                if (tKeyLogs[i].key === TARGET[tIdx]) {
-                    matched.unshift(tKeyLogs[i]);
-                    tIdx--;
-                    if (tIdx < 0) break;
-                }
+            if (tCurrentEvents.length < TARGET.length) {
+                alert("Incomplete sequence. Try again.");
+                tInput.value = '';
+                tCurrentEvents = [];
+                tPressTimers = {};
+                return;
             }
 
-            const attempt = matched.map((k, idx) => ({
+            const matchedEvents = tCurrentEvents.slice(-TARGET.length);
+            const attempt = matchedEvents.map((k, idx) => ({
                 key: k.key,
                 hold: Math.max(0.01, (k.up - k.down) / 1000.0),
-                flight: idx > 0 ? Math.max(0.005, (k.down - matched[idx-1].up) / 1000.0) : 0.0
+                flight: idx > 0 ? Math.max(0.005, (k.down - matchedEvents[idx-1].up) / 1000.0) : 0.0
             }));
 
             userAttempts.push(attempt);
             tInput.value = '';
-            tDownTimes = [];
-            tKeyLogs = [];
+            tPressTimers = {};
+            tCurrentEvents = [];
 
             const count = userAttempts.length;
             document.getElementById('tCount').innerText = `${count} / 10`;
@@ -326,7 +182,7 @@
         }
 
         // ==========================================
-        // 3. محرك الرسوم البيانية (Charts)
+        // الرسوم البيانية (Charts)
         // ==========================================
         let chartInitialized = false;
         function initChart() {
@@ -336,7 +192,7 @@
                 type: 'scatter',
                 data: {
                     datasets: [
-                        { label: 'Owner Profile', data: Array.from({length:30}, () => ({x: +(0.105 + Math.random()*0.02).toFixed(3), y: +(0.280 + Math.random()*0.04).toFixed(3)})), backgroundColor: '#2997ff' },
+                        { label: 'Authorized Owner', data: Array.from({length:30}, () => ({x: +(0.105 + Math.random()*0.02).toFixed(3), y: +(0.280 + Math.random()*0.04).toFixed(3)})), backgroundColor: '#2997ff' },
                         { label: 'Imposter A', data: Array.from({length:30}, () => ({x: +(0.075 + Math.random()*0.02).toFixed(3), y: +(0.170 + Math.random()*0.04).toFixed(3)})), backgroundColor: '#ff453a' },
                         { label: 'Imposter B', data: Array.from({length:30}, () => ({x: +(0.145 + Math.random()*0.02).toFixed(3), y: +(0.380 + Math.random()*0.04).toFixed(3)})), backgroundColor: '#ff9f0a' }
                     ]
@@ -351,5 +207,3 @@
             });
         }
     </script>
-</body>
-</html>
