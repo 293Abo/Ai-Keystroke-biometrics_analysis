@@ -26,7 +26,7 @@ class SystemState:
     def init_safe_model(self):
         pipe = Pipeline([
             ('scaler', RobustScaler()),
-            ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.05)) # nu منخفض لتقليل الحساسية وقبول الكتابة
+            ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.05))
         ])
         dummy_data = np.random.normal(0.25, 0.05, (30, len(self.features)))
         pipe.fit(pd.DataFrame(dummy_data, columns=self.features))
@@ -38,6 +38,7 @@ class SystemState:
                 artifact = joblib.load(MODEL_PATH)
                 self.model = artifact['model']
                 self.features = artifact['features']
+                print(f"Model loaded successfully with {len(self.features)} features.")
             except Exception as e:
                 print(f"Error loading model: {e}")
 
@@ -95,8 +96,8 @@ def verify_attempt(payload: VerifyPayload):
     pred = int(state.model.predict(df_eval)[0])
     score = float(state.model.decision_function(df_eval)[0])
     
-    # قبول المحاولة بسكور مرن جداً لمنع الرفض المزعج
-    is_auth = (pred == 1) or (score >= -0.50)
+    # الصرامة الأمنية: التحقق من أن الموديل وافق وأن السكور غير سالب
+    is_auth = (pred == 1) and (score >= 0.0)
 
     return {
         "authorized": is_auth,
