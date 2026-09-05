@@ -10,7 +10,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.preprocessing import RobustScaler
 from sklearn.pipeline import Pipeline
 
-app = FastAPI(title="Apple Kinetic Biometrics Gateway")
+app = FastAPI(title="Apple Kinetic Biometrics Gateway - High Security")
 
 TARGET_PASSPHRASE = "Welcome Guest"
 MODEL_PATH = "biometric_model.pkl"
@@ -20,15 +20,16 @@ class SystemState:
         self.owner_name = "Verified Owner"
         self.model = None
         self.features = ['dwell_ratio', 'avg_hold_ratio', 'std_hold_ratio', 'avg_flight_ratio', 'std_flight_ratio'] + [f'rel_digraph_{i}' for i in range(1, 12)]
-        self.init_safe_model()
+        self.init_strict_model()
         self.load_model()
 
-    def init_safe_model(self):
+    def init_strict_model(self):
+        # جعل النموذج فائق الصرامة بـ nu صغير جداً وحدود ضيقة
         pipe = Pipeline([
             ('scaler', RobustScaler()),
-            ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.05))
+            ('svm', OneClassSVM(kernel='rbf', gamma=0.02, nu=0.01))
         ])
-        dummy_data = np.random.normal(0.25, 0.05, (30, len(self.features)))
+        dummy_data = np.random.normal(0.25, 0.02, (40, len(self.features)))
         pipe.fit(pd.DataFrame(dummy_data, columns=self.features))
         self.model = pipe
 
@@ -38,7 +39,7 @@ class SystemState:
                 artifact = joblib.load(MODEL_PATH)
                 self.model = artifact['model']
                 self.features = artifact['features']
-                print(f"Model loaded successfully with {len(self.features)} features.")
+                print(f"Strict model loaded successfully.")
             except Exception as e:
                 print(f"Error loading model: {e}")
 
@@ -81,7 +82,7 @@ def serve_portal():
     if os.path.exists("portal.html"):
         with open("portal.html", "r", encoding="utf-8") as f:
             return f.read()
-    return "<h1 style='color:white;text-align:center;'>portal.html is missing in repository.</h1>"
+    return "<h1 style='color:white;text-align:center;'>portal.html is missing.</h1>"
 
 @app.post("/api/verify")
 def verify_attempt(payload: VerifyPayload):
@@ -96,8 +97,8 @@ def verify_attempt(payload: VerifyPayload):
     pred = int(state.model.predict(df_eval)[0])
     score = float(state.model.decision_function(df_eval)[0])
     
-    # الصرامة الأمنية: التحقق من أن الموديل وافق وأن السكور غير سالب
-    is_auth = (pred == 1) and (score >= 0.0)
+    # صرامة أمنية قصوى: يجب أن يوافق الموديل وأن يكون السكور أعلى من 0.15 بوضوح
+    is_auth = (pred == 1) and (score > 0.15)
 
     return {
         "authorized": is_auth,
@@ -116,7 +117,7 @@ def enroll_user(payload: EnrollPayload):
 
     new_pipeline = Pipeline([
         ('scaler', RobustScaler()),
-        ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.05))
+        ('svm', OneClassSVM(kernel='rbf', gamma=0.02, nu=0.01))
     ])
     new_pipeline.fit(df_train)
 
