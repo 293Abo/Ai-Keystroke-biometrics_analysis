@@ -1,0 +1,129 @@
+import os
+import joblib
+import numpy as np
+import pandas as pd
+from typing import List, Dict, Any
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+from sklearn.svm import OneClassSVM
+from sklearn.preprocessing import RobustScaler
+from sklearn.pipeline import Pipeline
+
+app = FastAPI(title="Kinetic Biometrics Gateway")
+
+TARGET_PASSPHRASE = "Welcome Guest"
+MODEL_PATH = "biometric_model.pkl"
+
+class SystemState:
+    def __init__(self):
+        self.owner_name = "Verified Owner"
+        self.model = None
+        self.features = []
+        self.load_model()
+
+    def load_model(self):
+        if os.path.exists(MODEL_PATH):
+            try:
+                artifact = joblib.load(MODEL_PATH)
+                self.model = artifact['model']
+                self.features = artifact['features']
+                return
+            except Exception as e:
+                print(f"Error: {e}")
+
+        # بناء خط احتياطي مطابق للخلية 6 في كولاب
+        self.features = ['dwell_ratio', 'avg_hold_ratio', 'std_hold_ratio', 'avg_flight_ratio', 'std_flight_ratio'] + [f'rel_digraph_{i}' for i in range(1, 12)]
+        pipe = Pipeline([
+            ('scaler', RobustScaler()),
+            ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.15))
+        ])
+        dummy = np.random.normal(0.2, 0.03, (15, len(self.features)))
+        pipe.fit(pd.DataFrame(dummy, columns=self.features))
+        self.model = pipe
+
+state = SystemState()
+
+class VerifyPayload(BaseModel):
+    keystrokes: List[Dict[str, Any]]
+
+class EnrollPayload(BaseModel):
+    username: str
+    attempts: List[List[Dict[str, Any]]]
+
+def extract_features(keystrokes: List[Dict[str, Any]]) -> Dict[str, float]:
+    holds = [k['hold'] for k in keystrokes]
+    flights = [k['flight'] for k in keystrokes]
+
+    total_hold = float(np.sum(holds))
+    total_flight = float(np.sum(flights[1:]))
+    total_time = total_hold + total_flight
+
+    dwell_ratio = total_hold / max(0.0001, total_flight)
+    relative_flights = [f / max(0.001, total_time) for f in flights[1:]]
+    relative_holds = [h / max(0.001, total_hold) for h in holds]
+
+    f_dict = {
+        'dwell_ratio': dwell_ratio,
+        'avg_hold_ratio': float(np.mean(relative_holds)),
+        'std_hold_ratio': float(np.std(relative_holds)),
+        'avg_flight_ratio': float(np.mean(relative_flights)),
+        'std_flight_ratio': float(np.std(relative_flights))
+    }
+
+    for i, rel_f in enumerate(relative_flights):
+        f_dict[f'rel_digraph_{i+1}'] = float(rel_f)
+
+    return f_dict
+
+@app.post("/api/verify")
+def verify_attempt(payload: VerifyPayload):
+    if len(payload.keystrokes) < len(TARGET_PASSPHRASE):
+        return {"authorized": False, "score": -1.0, "message": "Incomplete input"}
+
+    feat_dict = extract_features(payload.keystrokes)
+    df_eval = pd.DataFrame([feat_dict]).fillna(0)
+
+    for col in state.features:
+        if col not in df_eval.columns:
+            df_eval[col] = 0.0
+    df_eval = df_eval[state.features]
+
+    pred = int(state.model.predict(df_eval)[0])
+    score = float(state.model.decision_function(df_eval)[0])
+
+    is_auth = (pred == 1) or (score >= -0.05)
+
+    return {
+        "authorized": is_auth,
+        "score": round(score, 4),
+        "dwell_ratio": round(feat_dict['dwell_ratio'], 3),
+        "owner": state.owner_name
+    }
+
+@app.post("/api/enroll")
+def enroll_user(payload: EnrollPayload):
+    if len(payload.attempts) < 10:
+        return {"success": False, "message": "10 attempts required"}
+
+    training_rows = [extract_features(a) for a in payload.attempts]
+    df_train = pd.DataFrame(training_rows).fillna(0)
+
+    new_pipeline = Pipeline([
+        ('scaler', RobustScaler()),
+        ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.15))
+    ])
+    new_pipeline.fit(df_train)
+
+    state.model = new_pipeline
+    state.features = list(df_train.columns)
+    state.owner_name = payload.username.strip() if payload.username.strip() else "Verified Owner"
+
+    joblib.dump({'model': state.model, 'features': state.features}, MODEL_PATH)
+
+    return {"success": True, "owner": state.owner_name}
+
+@app.get("/", response_class=HTMLResponse)
+def serve_portal():
+    with open("portal.html", "r", encoding="utf-8") as f:
+        return f.read()
