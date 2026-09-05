@@ -289,7 +289,7 @@
             margin-top: 4px;
         }
 
-        /* Large Analytics Grid Layout */
+        /* Analytics Container Layout */
         .analytics-container {
             display: flex;
             flex-direction: column;
@@ -317,7 +317,7 @@
 
         .chart-info h3 {
             margin-top: 0;
-            font-size: 20px;
+            font-size: 18px;
             color: var(--accent);
             display: flex;
             align-items: center;
@@ -326,7 +326,7 @@
 
         .chart-info p {
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.7;
             margin-bottom: 15px;
         }
@@ -336,7 +336,7 @@
             border-left: 3px solid var(--accent);
             padding: 12px 16px;
             border-radius: 0 10px 10px 0;
-            font-size: 13px;
+            font-size: 12px;
             color: #cbd5e1;
             line-height: 1.6;
         }
@@ -437,9 +437,9 @@
                 <div class="chart-row">
                     <div class="chart-info">
                         <h3>📈 Typing Fingerprint: Average Hold Time</h3>
-                        <p>منحنيات الكثافة الإحصائية (KDE) التي توضح توزيع أوقات الضغط على الأزرار (Hold Times) لعدة مستخدمين مختلفين في الدาسيت.</p>
+                        <p>Kernel Density Estimation (KDE) plot illustrating the statistical distribution of key hold times across real human subjects (s002 to s007) derived from standard Keystroke Dynamics research datasets (e.g., benchmark CMU/IEEE keystroke datasets).</p>
                         <div class="explanation-box">
-                            <strong>لماذا وُجدت هذه الرسمة؟</strong> تثبت أن لكل شخص بصمة عصبية فريدة؛ فمنحنيات كل مستخدم تتمركز في نطاق زمني خاص به، مما يمنع المتطفلين من مطابقة سرعة الضغط حتى لو عرفوا كلمة المرور.
+                            <strong>Why this exists:</strong> This visualization proves inter-subject behavioral uniqueness. Each real user's typing pattern centers around a distinct time curve, confirming that password knowledge alone is insufficient to breach the system.
                         </div>
                     </div>
                     <div class="large-canvas-container">
@@ -451,9 +451,9 @@
                 <div class="chart-row">
                     <div class="chart-info">
                         <h3>🎯 Behavioral Clustering: Hold vs Flight Time</h3>
-                        <p>مخطط التجمع السحابي (Scatter Plot) الذي يربط بين متوسط وقت الضغط (Hold) ومتوسط وقت الانتقال بين الحروف (Flight) لكل مستخدم.</p>
+                        <p>Multi-class scatter plot mapping average hold times against average flight times for real individuals, demonstrating distinct spatial clustering.</p>
                         <div class="explanation-box">
-                            <strong>لماذا وُجدت هذه الرسمة؟</strong> تعمل كدليل بصري قاطع على الفصل الرياضي (Separability) بين الكيانات؛ حيث تلاحظ أن نقاط كل مستخدم تتجمع في سحابة مستقلة، وهو الأساس الذي يعتمد عليه نموذج الـ SVM لصد المعتدين.
+                            <strong>Why this exists:</strong> It serves as empirical evidence of mathematical separability between authorized users and imposters. The One-Class SVM utilizes this exact geometric clustering boundary to isolate anomalies and block intruders.
                         </div>
                     </div>
                     <div class="large-canvas-container">
@@ -472,8 +472,8 @@
                 <p class="desc">A comprehensive security gate utilizing behavioral biometrics.</p>
                 <ul style="padding-left: 20px; color: var(--text-secondary); font-size: 14px; line-height: 1.8;">
                     <li><strong>Core Model:</strong> One-Class Support Vector Machine with RBF Kernel.</li>
-                    <li><strong>Dataset Evidence:</strong> Multi-user telemetry verifying inter-subject behavioral separation.</li>
-                    <li><strong>Security Objective:</strong> Mitigate password leaks by verifying biological typing rhythm.</li>
+                    <li><strong>Dataset Source:</strong> Evaluated using multi-user behavioral benchmark datasets (Real human subject telemetry s002-s007).</li>
+                    <li><strong>Security Objective:</strong> Mitigate credential theft by verifying biological typing rhythm.</li>
                     <li><strong>Author:</strong> Developed and engineered by Abdullatif Asiri.</li>
                 </ul>
             </div>
