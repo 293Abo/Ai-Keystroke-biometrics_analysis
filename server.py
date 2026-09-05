@@ -12,7 +12,7 @@ from sklearn.pipeline import Pipeline
 
 app = FastAPI(title="Biometric Security Gateway")
 
-TARGET_PASSPHRASE = "Welcome Guest"
+TARGET_PASSPHRASE = "Project Alpha 2026"
 MODEL_PATH = "biometric_model.pkl"
 
 class SystemState:
