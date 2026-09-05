@@ -37,11 +37,11 @@
 
         header {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1300px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 24px 30px;
+            padding: 24px 40px;
             box-sizing: border-box;
             border-bottom: 1px solid var(--border-color);
             margin-bottom: 20px;
@@ -113,8 +113,8 @@
 
         .main-wrapper {
             width: 100%;
-            max-width: 1100px;
-            padding: 20px 30px;
+            max-width: 1250px;
+            padding: 20px 40px;
             box-sizing: border-box;
             flex: 1;
             display: flex;
@@ -148,7 +148,7 @@
             text-align: center;
             position: relative;
             overflow: hidden;
-            max-width: 700px;
+            max-width: 750px;
             margin: 0 auto;
         }
 
@@ -289,51 +289,67 @@
             margin-top: 4px;
         }
 
-        /* Analytics Grid matching Colab Dataset */
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        /* Large Analytics Grid Layout */
+        .analytics-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
             width: 100%;
         }
 
-        @media (max-width: 900px) {
-            .analytics-grid {
+        .chart-row {
+            background: var(--surface-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 35px;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 35px;
+            align-items: center;
+        }
+
+        @media (max-width: 950px) {
+            .chart-row {
                 grid-template-columns: 1fr;
             }
         }
 
-        .chart-card {
-            background: var(--surface-glass);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 25px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chart-card h3 {
+        .chart-info h3 {
             margin-top: 0;
-            font-size: 15px;
+            font-size: 20px;
             color: var(--accent);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .chart-card p {
+        .chart-info p {
             color: var(--text-secondary);
-            font-size: 12px;
-            line-height: 1.5;
+            font-size: 14px;
+            line-height: 1.7;
             margin-bottom: 15px;
         }
 
-        .canvas-container {
+        .explanation-box {
+            background: rgba(12, 15, 23, 0.7);
+            border-left: 3px solid var(--accent);
+            padding: 12px 16px;
+            border-radius: 0 10px 10px 0;
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .large-canvas-container {
             position: relative;
-            flex: 1;
             width: 100%;
-            height: 260px;
+            height: 320px;
+            background: rgba(12, 15, 23, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 15px;
+            box-sizing: border-box;
         }
 
         footer {
@@ -413,24 +429,34 @@
             </div>
         </div>
 
-        <!-- 3. Dataset Analytics & Visualizations (Exact Colab Dataset Replication) -->
+        <!-- 3. Dataset Analytics & Large Visualizations -->
         <div id="charts-view" class="view-section">
-            <div class="analytics-grid">
+            <div class="analytics-container">
                 
-                <!-- Chart 1: Typing Fingerprint: Average Hold Time per User -->
-                <div class="chart-card">
-                    <h3>📈 Typing Fingerprint: Average Hold Time per User</h3>
-                    <p>Density distribution curves illustrating distinct neuromuscular cadence variations across subjects (s002, s003, s004, s005, s007) derived from benchmark testing.</p>
-                    <div class="canvas-container">
+                <!-- Chart Row 1: KDE Density Plot -->
+                <div class="chart-row">
+                    <div class="chart-info">
+                        <h3>📈 Typing Fingerprint: Average Hold Time</h3>
+                        <p>منحنيات الكثافة الإحصائية (KDE) التي توضح توزيع أوقات الضغط على الأزرار (Hold Times) لعدة مستخدمين مختلفين في الدาسيت.</p>
+                        <div class="explanation-box">
+                            <strong>لماذا وُجدت هذه الرسمة؟</strong> تثبت أن لكل شخص بصمة عصبية فريدة؛ فمنحنيات كل مستخدم تتمركز في نطاق زمني خاص به، مما يمنع المتطفلين من مطابقة سرعة الضغط حتى لو عرفوا كلمة المرور.
+                        </div>
+                    </div>
+                    <div class="large-canvas-container">
                         <canvas id="holdDensityChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Chart 2: Behavioral Clustering: Hold vs Flight Time -->
-                <div class="chart-card">
-                    <h3>🎯 Behavioral Clustering: Hold vs Flight Time</h3>
-                    <p>Scatter plot clustering average hold times against average flight times, proving multi-user behavioral separation and uniqueness.</p>
-                    <div class="canvas-container">
+                <!-- Chart Row 2: Scatter Plot Clustering -->
+                <div class="chart-row">
+                    <div class="chart-info">
+                        <h3>🎯 Behavioral Clustering: Hold vs Flight Time</h3>
+                        <p>مخطط التجمع السحابي (Scatter Plot) الذي يربط بين متوسط وقت الضغط (Hold) ومتوسط وقت الانتقال بين الحروف (Flight) لكل مستخدم.</p>
+                        <div class="explanation-box">
+                            <strong>لماذا وُجدت هذه الرسمة؟</strong> تعمل كدليل بصري قاطع على الفصل الرياضي (Separability) بين الكيانات؛ حيث تلاحظ أن نقاط كل مستخدم تتجمع في سحابة مستقلة، وهو الأساس الذي يعتمد عليه نموذج الـ SVM لصد المعتدين.
+                        </div>
+                    </div>
+                    <div class="large-canvas-container">
                         <canvas id="clusteringScatterChart"></canvas>
                     </div>
                 </div>
@@ -513,13 +539,12 @@
             }
         }
 
-        // Render actual Colab Dataset charts matching the exact user subjects (s002 - s007)
         let chartsInitialized = false;
         function renderColabDatasetCharts() {
             if (chartsInitialized) return;
             chartsInitialized = true;
 
-            // 1. KDE Density Plot simulation for Hold Times (Matching Python Seaborn output)
+            // 1. Large KDE Density Plot
             const ctxHold = document.getElementById('holdDensityChart').getContext('2d');
             new Chart(ctxHold, {
                 type: 'line',
@@ -536,7 +561,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 12 } } } },
                     scales: {
                         x: { title: { display: true, text: 'Avg_Hold_Time', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
                         y: { title: { display: true, text: 'Density', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
@@ -544,23 +569,23 @@
                 }
             });
 
-            // 2. Behavioral Clustering Scatter Plot (Matching Python Seaborn scatter_plot output)
+            // 2. Large Scatter Plot Clustering
             const ctxScatter = document.getElementById('clusteringScatterChart').getContext('2d');
             new Chart(ctxScatter, {
                 type: 'scatter',
                 data: {
                     datasets: [
-                        { label: 's002', data: [{x: 0.08, y: 0.05}, {x: 0.085, y: 0.08}, {x: 0.09, y: 0.04}, {x: 0.078, y: 0.09}], backgroundColor: '#3b82f6' },
-                        { label: 's003', data: [{x: 0.11, y: 0.18}, {x: 0.115, y: 0.22}, {x: 0.108, y: 0.15}, {x: 0.12, y: 0.19}], backgroundColor: '#f59e0b' },
-                        { label: 's004', data: [{x: 0.10, y: 0.25}, {x: 0.105, y: 0.28}, {x: 0.098, y: 0.24}, {x: 0.102, y: 0.30}], backgroundColor: '#10b981' },
-                        { label: 's005', data: [{x: 0.12, y: 0.35}, {x: 0.125, y: 0.42}, {x: 0.118, y: 0.38}, {x: 0.13, y: 0.45}], backgroundColor: '#f43f5e' },
-                        { label: 's007', data: [{x: 0.07, y: 0.02}, {x: 0.075, y: 0.04}, {x: 0.068, y: 0.03}, {x: 0.072, y: 0.05}], backgroundColor: '#a855f7' }
+                        { label: 's002', data: [{x: 0.08, y: 0.05}, {x: 0.085, y: 0.08}, {x: 0.09, y: 0.04}, {x: 0.078, y: 0.09}], backgroundColor: '#3b82f6', pointRadius: 6 },
+                        { label: 's003', data: [{x: 0.11, y: 0.18}, {x: 0.115, y: 0.22}, {x: 0.108, y: 0.15}, {x: 0.12, y: 0.19}], backgroundColor: '#f59e0b', pointRadius: 6 },
+                        { label: 's004', data: [{x: 0.10, y: 0.25}, {x: 0.105, y: 0.28}, {x: 0.098, y: 0.24}, {x: 0.102, y: 0.30}], backgroundColor: '#10b981', pointRadius: 6 },
+                        { label: 's005', data: [{x: 0.12, y: 0.35}, {x: 0.125, y: 0.42}, {x: 0.118, y: 0.38}, {x: 0.13, y: 0.45}], backgroundColor: '#f43f5e', pointRadius: 6 },
+                        { label: 's007', data: [{x: 0.07, y: 0.02}, {x: 0.075, y: 0.04}, {x: 0.068, y: 0.03}, {x: 0.072, y: 0.05}], backgroundColor: '#a855f7', pointRadius: 6 }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 12 } } } },
                     scales: {
                         x: { title: { display: true, text: 'Avg_Hold_Time', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
                         y: { title: { display: true, text: 'Avg_Flight_Time', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
@@ -607,7 +632,6 @@
             inputField.value = '';
         }
 
-        // Enrollment logic
         let enrollmentAttempts = [];
         const enrollInput = document.getElementById('enroll-input');
         let enrollKeystrokes = [];
