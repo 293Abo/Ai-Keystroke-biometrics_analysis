@@ -10,7 +10,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.preprocessing import RobustScaler
 from sklearn.pipeline import Pipeline
 
-app = FastAPI(title="Kinetic Biometrics Gateway")
+app = FastAPI(title="Apple Kinetic Biometrics Gateway")
 
 TARGET_PASSPHRASE = "Welcome Guest"
 MODEL_PATH = "biometric_model.pkl"
@@ -19,8 +19,19 @@ class SystemState:
     def __init__(self):
         self.owner_name = "Verified Owner"
         self.model = None
-        self.features = []
+        self.features = ['dwell_ratio', 'avg_hold_ratio', 'std_hold_ratio', 'avg_flight_ratio', 'std_flight_ratio'] + [f'rel_digraph_{i}' for i in range(1, 12)]
+        self.init_fallback_model()
         self.load_model()
+
+    def init_fallback_model(self):
+        # بناء خط احتياطي يعمل تلقائياً إذا تأخر تحميل الملف
+        pipe = Pipeline([
+            ('scaler', RobustScaler()),
+            ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.15))
+        ])
+        dummy_data = np.random.normal(0.25, 0.04, (15, len(self.features)))
+        pipe.fit(pd.DataFrame(dummy_data, columns=self.features))
+        self.model = pipe
 
     def load_model(self):
         if os.path.exists(MODEL_PATH):
@@ -28,19 +39,9 @@ class SystemState:
                 artifact = joblib.load(MODEL_PATH)
                 self.model = artifact['model']
                 self.features = artifact['features']
-                return
+                print(f"Loaded model successfully with {len(self.features)} features.")
             except Exception as e:
-                print(f"Error loading model: {e}")
-
-        # بناء خط احتياطي مطابق لبيئة Colab
-        self.features = ['dwell_ratio', 'avg_hold_ratio', 'std_hold_ratio', 'avg_flight_ratio', 'std_flight_ratio'] + [f'rel_digraph_{i}' for i in range(1, 12)]
-        pipe = Pipeline([
-            ('scaler', RobustScaler()),
-            ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.15))
-        ])
-        dummy = np.random.normal(0.25, 0.04, (15, len(self.features)))
-        pipe.fit(pd.DataFrame(dummy, columns=self.features))
-        self.model = pipe
+                print(f"Fallback active, error loading model file: {e}")
 
 state = SystemState()
 
@@ -52,8 +53,8 @@ class EnrollPayload(BaseModel):
     attempts: List[List[Dict[str, Any]]]
 
 def extract_features(keystrokes: List[Dict[str, Any]]) -> Dict[str, float]:
-    holds = [float(k['hold']) for k in keystrokes]
-    flights = [float(k['flight']) for k in keystrokes]
+    holds = [float(k.get('hold', 0.1)) for k in keystrokes]
+    flights = [float(k.get('flight', 0.1)) for k in keystrokes]
 
     total_hold = float(np.sum(holds))
     total_flight = float(np.sum(flights[1:])) if len(flights) > 1 else 0.001
@@ -75,6 +76,13 @@ def extract_features(keystrokes: List[Dict[str, Any]]) -> Dict[str, float]:
         f_dict[f'rel_digraph_{i+1}'] = float(rel_f)
 
     return f_dict
+
+@app.get("/", response_class=HTMLResponse)
+def serve_portal():
+    if os.path.exists("portal.html"):
+        with open("portal.html", "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1 style='color:white;text-align:center;margin-top:20%;'>portal.html file not found in root directory.</h1>"
 
 @app.post("/api/verify")
 def verify_attempt(payload: VerifyPayload):
@@ -127,8 +135,3 @@ def enroll_user(payload: EnrollPayload):
     joblib.dump({'model': state.model, 'features': state.features}, MODEL_PATH)
 
     return {"success": True, "owner": state.owner_name}
-
-@app.get("/", response_class=HTMLResponse)
-def serve_portal():
-    with open("portal.html", "r", encoding="utf-8") as f:
-        return f.read()
