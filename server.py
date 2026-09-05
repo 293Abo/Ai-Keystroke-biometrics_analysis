@@ -10,7 +10,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.preprocessing import RobustScaler
 from sklearn.pipeline import Pipeline
 
-app = FastAPI(title="Apple Kinetic Biometrics Gateway")
+app = FastAPI(title="Biometric Security Gateway")
 
 TARGET_PASSPHRASE = "Welcome Guest"
 MODEL_PATH = "biometric_model.pkl"
@@ -35,12 +35,12 @@ class SystemState:
                     df_train = pd.DataFrame(artifact).fillna(0)
                     pipe = Pipeline([
                         ('scaler', RobustScaler()),
-                        ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.05))
+                        ('svm', OneClassSVM(kernel='rbf', gamma=0.035, nu=0.01))
                     ])
                     pipe.fit(df_train)
                     self.model = pipe
                     self.features = list(df_train.columns)
-                print("Machine Learning Model loaded successfully!")
+                print("Security model loaded successfully!")
             except Exception as e:
                 print(f"Error loading model: {e}")
                 self.init_fallback()
@@ -50,7 +50,7 @@ class SystemState:
     def init_fallback(self):
         pipe = Pipeline([
             ('scaler', RobustScaler()),
-            ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.05))
+            ('svm', OneClassSVM(kernel='rbf', gamma=0.035, nu=0.01))
         ])
         dummy_data = np.random.normal(0.25, 0.04, (20, len(self.features)))
         pipe.fit(pd.DataFrame(dummy_data, columns=self.features))
@@ -107,20 +107,15 @@ def verify_attempt(payload: VerifyPayload):
             df_eval[col] = 0.0
     df_eval = df_eval[state.features]
 
-    # حساب المسافة الإشعاعية عبر الـ AI Decision Function
+    pred = int(state.model.predict(df_eval)[0])
     score = float(state.model.decision_function(df_eval)[0])
     
-    # تحويل السكور إلى مؤشر ثقة ذكي (Soft Probability Kernel Mapping)
-    # الموديل هنا يتعامل مع الاحتمالية الناتجة من الكثافة الاحتمالية (Density Estimation)
-    confidence_probability = 1.0 / (1.0 + np.exp(-score * 10))
-    
-    # القبول يعتمد على ما إذا كان ضمن النطاق الاحتمالي المحسوب بالذكاء الاصطناعي
-    is_auth = score >= 0.0
+    # حماية أمنية حقيقية: السماح فقط لمن يقع داخل البصمة المعتمدة
+    is_auth = (pred == 1)
 
     return {
         "authorized": is_auth,
         "score": round(score, 4),
-        "confidence": round(confidence_probability * 100, 2),
         "dwell_ratio": round(feat_dict['dwell_ratio'], 3),
         "owner": state.owner_name
     }
@@ -133,10 +128,9 @@ def enroll_user(payload: EnrollPayload):
     training_rows = [extract_features(a) for a in payload.attempts]
     df_train = pd.DataFrame(training_rows).fillna(0)
 
-    # تدريب موديل الذكاء الاصطناعي بضبط الـ gamma ليتوافق بدقة مع النطاق الحي
     new_pipeline = Pipeline([
         ('scaler', RobustScaler()),
-        ('svm', OneClassSVM(kernel='rbf', gamma=0.015, nu=0.04))
+        ('svm', OneClassSVM(kernel='rbf', gamma=0.035, nu=0.01))
     ])
     new_pipeline.fit(df_train)
 
