@@ -95,7 +95,7 @@ def serve_portal():
     if os.path.exists("portal.html"):
         with open("portal.html", "r", encoding="utf-8") as f:
             return f.read()
-    return "<h1 style='color:white;text-align:center;'>portal.html is missing.</h1>"
+    return "<h1 style='color:black;text-align:center;'>portal.html is missing.</h1>"
 
 @app.post("/api/verify")
 def verify_attempt(payload: VerifyPayload):
@@ -110,8 +110,8 @@ def verify_attempt(payload: VerifyPayload):
     pred = int(state.model.predict(df_eval)[0])
     score = float(state.model.decision_function(df_eval)[0])
     
-    # الاعتماد الحقيقي على تنبؤ نموذج الـ SVM المستخرج من كولاب
-    is_auth = (pred == 1)
+    # صرامة ذكية مع مرونة طفيفة للتقليل من الرفض الخاطئ (False Rejection)
+    is_auth = (pred == 1) or (score >= -0.015)
 
     return {
         "authorized": is_auth,
