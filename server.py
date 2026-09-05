@@ -10,7 +10,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.preprocessing import RobustScaler
 from sklearn.pipeline import Pipeline
 
-app = FastAPI(title="Apple Kinetic Biometrics Gateway - High Security")
+app = FastAPI(title="Apple Kinetic Biometrics Gateway")
 
 TARGET_PASSPHRASE = "Welcome Guest"
 MODEL_PATH = "biometric_model.pkl"
@@ -20,28 +20,41 @@ class SystemState:
         self.owner_name = "Verified Owner"
         self.model = None
         self.features = ['dwell_ratio', 'avg_hold_ratio', 'std_hold_ratio', 'avg_flight_ratio', 'std_flight_ratio'] + [f'rel_digraph_{i}' for i in range(1, 12)]
-        self.init_strict_model()
         self.load_model()
-
-    def init_strict_model(self):
-        # جعل النموذج فائق الصرامة بـ nu صغير جداً وحدود ضيقة
-        pipe = Pipeline([
-            ('scaler', RobustScaler()),
-            ('svm', OneClassSVM(kernel='rbf', gamma=0.02, nu=0.01))
-        ])
-        dummy_data = np.random.normal(0.25, 0.02, (40, len(self.features)))
-        pipe.fit(pd.DataFrame(dummy_data, columns=self.features))
-        self.model = pipe
 
     def load_model(self):
         if os.path.exists(MODEL_PATH):
             try:
                 artifact = joblib.load(MODEL_PATH)
-                self.model = artifact['model']
-                self.features = artifact['features']
-                print(f"Strict model loaded successfully.")
+                if isinstance(artifact, dict) and 'model' in artifact:
+                    self.model = artifact['model']
+                    self.features = artifact.get('features', self.features)
+                elif hasattr(artifact, 'predict'):
+                    self.model = artifact
+                else:
+                    df_train = pd.DataFrame(artifact).fillna(0)
+                    pipe = Pipeline([
+                        ('scaler', RobustScaler()),
+                        ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.05))
+                    ])
+                    pipe.fit(df_train)
+                    self.model = pipe
+                    self.features = list(df_train.columns)
+                print("Colab Biometric Model loaded successfully!")
             except Exception as e:
-                print(f"Error loading model: {e}")
+                print(f"Error loading Colab model: {e}")
+                self.init_fallback()
+        else:
+            self.init_fallback()
+
+    def init_fallback(self):
+        pipe = Pipeline([
+            ('scaler', RobustScaler()),
+            ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.05))
+        ])
+        dummy_data = np.random.normal(0.25, 0.04, (20, len(self.features)))
+        pipe.fit(pd.DataFrame(dummy_data, columns=self.features))
+        self.model = pipe
 
 state = SystemState()
 
@@ -97,8 +110,8 @@ def verify_attempt(payload: VerifyPayload):
     pred = int(state.model.predict(df_eval)[0])
     score = float(state.model.decision_function(df_eval)[0])
     
-    # صرامة أمنية قصوى: يجب أن يوافق الموديل وأن يكون السكور أعلى من 0.15 بوضوح
-    is_auth = (pred == 1) and (score > 0.15)
+    # الاعتماد الحقيقي على تنبؤ نموذج الـ SVM المستخرج من كولاب
+    is_auth = (pred == 1)
 
     return {
         "authorized": is_auth,
@@ -117,7 +130,7 @@ def enroll_user(payload: EnrollPayload):
 
     new_pipeline = Pipeline([
         ('scaler', RobustScaler()),
-        ('svm', OneClassSVM(kernel='rbf', gamma=0.02, nu=0.01))
+        ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.05))
     ])
     new_pipeline.fit(df_train)
 
