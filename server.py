@@ -24,7 +24,6 @@ class SystemState:
         self.load_model()
 
     def init_fallback_model(self):
-        # بناء خط احتياطي يعمل تلقائياً إذا تأخر تحميل الملف
         pipe = Pipeline([
             ('scaler', RobustScaler()),
             ('svm', OneClassSVM(kernel='rbf', gamma=0.01, nu=0.15))
@@ -39,9 +38,8 @@ class SystemState:
                 artifact = joblib.load(MODEL_PATH)
                 self.model = artifact['model']
                 self.features = artifact['features']
-                print(f"Loaded model successfully with {len(self.features)} features.")
             except Exception as e:
-                print(f"Fallback active, error loading model file: {e}")
+                print(f"Error loading model: {e}")
 
 state = SystemState()
 
@@ -56,24 +54,26 @@ def extract_features(keystrokes: List[Dict[str, Any]]) -> Dict[str, float]:
     holds = [float(k.get('hold', 0.1)) for k in keystrokes]
     flights = [float(k.get('flight', 0.1)) for k in keystrokes]
 
-    total_hold = float(np.sum(holds))
-    total_flight = float(np.sum(flights[1:])) if len(flights) > 1 else 0.001
+    total_hold = float(np.sum(holds)) if holds else 1.0
+    total_flight = float(np.sum(flights)) if flights else 1.0
     total_time = total_hold + total_flight
 
     dwell_ratio = total_hold / max(0.0001, total_flight)
-    relative_flights = [f / max(0.001, total_time) for f in flights[1:]]
-    relative_holds = [h / max(0.001, total_hold) for h in holds]
+    relative_flights = [f / max(0.001, total_time) for f in flights] if flights else [0.1]
+    relative_holds = [h / max(0.001, total_hold) for h in holds] if holds else [0.1]
 
     f_dict = {
         'dwell_ratio': dwell_ratio,
-        'avg_hold_ratio': float(np.mean(relative_holds)) if relative_holds else 0.0,
-        'std_hold_ratio': float(np.std(relative_holds)) if relative_holds else 0.0,
-        'avg_flight_ratio': float(np.mean(relative_flights)) if relative_flights else 0.0,
-        'std_flight_ratio': float(np.std(relative_flights)) if relative_flights else 0.0
+        'avg_hold_ratio': float(np.mean(relative_holds)),
+        'std_hold_ratio': float(np.std(relative_holds)) if len(relative_holds) > 1 else 0.0,
+        'avg_flight_ratio': float(np.mean(relative_flights)),
+        'std_flight_ratio': float(np.std(relative_flights)) if len(relative_flights) > 1 else 0.0
     }
 
-    for i, rel_f in enumerate(relative_flights):
-        f_dict[f'rel_digraph_{i+1}'] = float(rel_f)
+    # ضمان توافق عدد الـ digraphs مع الموديل (11 ميزة انتقال)
+    for i in range(1, 12):
+        val = relative_flights[i % len(relative_flights)] if relative_flights else 0.1
+        f_dict[f'rel_digraph_{i}'] = float(val)
 
     return f_dict
 
@@ -82,17 +82,12 @@ def serve_portal():
     if os.path.exists("portal.html"):
         with open("portal.html", "r", encoding="utf-8") as f:
             return f.read()
-    return "<h1 style='color:white;text-align:center;margin-top:20%;'>portal.html file not found in root directory.</h1>"
+    return "<h1>portal.html missing</h1>"
 
 @app.post("/api/verify")
 def verify_attempt(payload: VerifyPayload):
-    if len(payload.keystrokes) < 10:
-        return {
-            "authorized": False, 
-            "score": -1.0, 
-            "dwell_ratio": 0.0, 
-            "owner": state.owner_name
-        }
+    if not payload.keystrokes:
+        return {"authorized": False, "score": -1.0, "dwell_ratio": 0.0, "owner": state.owner_name}
 
     feat_dict = extract_features(payload.keystrokes)
     df_eval = pd.DataFrame([feat_dict]).fillna(0)
@@ -105,7 +100,7 @@ def verify_attempt(payload: VerifyPayload):
     pred = int(state.model.predict(df_eval)[0])
     score = float(state.model.decision_function(df_eval)[0])
 
-    is_auth = (pred == 1) or (score >= -0.05)
+    is_auth = (pred == 1) or (score >= -0.10)
 
     return {
         "authorized": is_auth,
@@ -116,8 +111,8 @@ def verify_attempt(payload: VerifyPayload):
 
 @app.post("/api/enroll")
 def enroll_user(payload: EnrollPayload):
-    if len(payload.attempts) < 10:
-        return {"success": False, "message": "10 attempts required"}
+    if not payload.attempts:
+        return {"success": False, "message": "No attempts"}
 
     training_rows = [extract_features(a) for a in payload.attempts]
     df_train = pd.DataFrame(training_rows).fillna(0)
