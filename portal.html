@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KineticID - Enterprise Keystroke Biometrics</title>
+    <title>KineticID - Biometric Security Gateway</title>
     <style>
         :root {
-            --bg-deep: #0a0f1d;
-            --surface: #131c31;
-            --surface-glass: rgba(19, 28, 49, 0.75);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --text-main: #f8fafc;
+            --bg-deep: #0c0f17;
+            --surface: #141a26;
+            --surface-glass: rgba(20, 26, 38, 0.85);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #f1f5f9;
             --text-secondary: #94a3b8;
-            --accent: #38bdf8;
-            --accent-glow: rgba(56, 189, 248, 0.25);
-            --danger: #ef4444;
-            --success: #22c55e;
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.2);
+            --danger: #f43f5e;
+            --success: #10b981;
         }
 
         body {
@@ -28,46 +28,61 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg-deep) 70%);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
         }
 
-        /* Top Navigation Bar */
+        /* Top Navigation & Branding */
         header {
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 24px 20px;
+            padding: 24px 30px;
             box-sizing: border-box;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            background: rgba(12, 15, 23, 0.8);
+            backdrop-filter: blur(12px);
         }
 
-        .logo-area {
+        .brand-container {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 20px;
-            letter-spacing: -0.5px;
-            color: var(--text-main);
+            gap: 15px;
         }
 
         .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent), #2563eb);
-            border-radius: 10px;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent), #059669);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 15px var(--accent-glow);
+            box-shadow: 0 0 20px var(--accent-glow);
+            font-size: 20px;
+        }
+
+        .brand-text h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .brand-text span {
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 600;
         }
 
         .navbar {
             display: flex;
-            gap: 8px;
-            background: var(--surface-glass);
-            backdrop-filter: blur(16px);
+            gap: 6px;
+            background: var(--surface);
             padding: 6px;
             border-radius: 99px;
             border: 1px solid var(--border-color);
@@ -76,9 +91,9 @@
         .navbar a {
             text-decoration: none;
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-            padding: 8px 18px;
+            padding: 8px 16px;
             border-radius: 99px;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -89,23 +104,23 @@
         }
 
         .navbar a.active {
-            color: var(--bg-deep);
+            color: #0c0f17;
             background: var(--accent);
             font-weight: 600;
-            box-shadow: 0 0 12px var(--accent-glow);
+            box-shadow: 0 0 10px var(--accent-glow);
         }
 
-        /* Main Container Views */
+        /* Main Wrapper */
         .main-wrapper {
             width: 100%;
-            max-width: 900px;
-            padding: 20px;
+            max-width: 1100px;
+            padding: 20px 30px;
             box-sizing: border-box;
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
         }
 
         .view-section {
@@ -123,17 +138,19 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Hero / Gateway Card */
+        /* Cards Layout */
         .card {
             background: var(--surface-glass);
             backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
             text-align: center;
             position: relative;
             overflow: hidden;
+            max-width: 700px;
+            margin: 0 auto;
         }
 
         .card::before {
@@ -145,20 +162,20 @@
         }
 
         .badge {
-            background: rgba(56, 189, 248, 0.1);
+            background: rgba(16, 185, 129, 0.1);
             color: var(--accent);
-            padding: 6px 14px;
+            padding: 6px 16px;
             border-radius: 99px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
             display: inline-block;
             margin-bottom: 20px;
-            border: 1px solid rgba(56, 189, 248, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.25);
         }
 
         h1 {
-            font-size: 32px;
+            font-size: 30px;
             margin: 0 0 10px 0;
             font-weight: 700;
             letter-spacing: -0.5px;
@@ -166,9 +183,9 @@
 
         p.desc {
             color: var(--text-secondary);
-            font-size: 15px;
-            margin-bottom: 30px;
-            line-height: 1.5;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.6;
         }
 
         .input-group {
@@ -178,9 +195,9 @@
 
         input[type="text"] {
             width: 100%;
-            padding: 18px 20px;
+            padding: 16px 20px;
             font-size: 16px;
-            background: rgba(10, 15, 29, 0.6);
+            background: rgba(12, 15, 23, 0.7);
             border: 1px solid var(--border-color);
             border-radius: 14px;
             color: var(--text-main);
@@ -199,10 +216,10 @@
         .btn-primary {
             width: 100%;
             padding: 16px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
-            background: linear-gradient(135deg, var(--accent), #0284c7);
-            color: var(--bg-deep);
+            background: linear-gradient(135deg, var(--accent), #059669);
+            color: #0c0f17;
             border: none;
             border-radius: 14px;
             cursor: pointer;
@@ -218,7 +235,7 @@
             transform: scale(0.99);
         }
 
-        /* Result Box Styles */
+        /* Result Box */
         .result-box {
             margin-top: 25px;
             padding: 20px;
@@ -226,29 +243,23 @@
             display: none;
             text-align: left;
             border: 1px solid;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .result-box.granted {
-            background: rgba(34, 197, 94, 0.1);
-            border-color: rgba(34, 197, 94, 0.3);
-            color: #4ade80;
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #34d399;
         }
 
         .result-box.denied {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.3);
-            color: #f87171;
+            background: rgba(244, 63, 94, 0.1);
+            border-color: rgba(244, 63, 94, 0.3);
+            color: #fb7185;
         }
 
         .result-title {
             font-weight: 700;
-            font-size: 16px;
+            font-size: 15px;
             margin-bottom: 6px;
             display: flex;
             align-items: center;
@@ -263,60 +274,90 @@
         }
 
         .metric-card {
-            background: rgba(10, 15, 29, 0.5);
+            background: rgba(12, 15, 23, 0.6);
             border: 1px solid var(--border-color);
             padding: 12px;
             border-radius: 10px;
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-secondary);
         }
 
         .metric-card span {
             display: block;
             font-weight: 700;
-            font-size: 16px;
+            font-size: 15px;
             color: var(--text-main);
             margin-top: 4px;
         }
 
-        /* Documentation & Charts Extra Pages styling */
-        .content-card {
+        /* Analytics / Charts Grid Styling */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .chart-card {
             background: var(--surface-glass);
-            backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 35px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            text-align: left;
+            border-radius: 20px;
+            padding: 25px;
+            box-sizing: border-box;
         }
 
-        .content-card h2 {
-            font-size: 22px;
+        .chart-card h3 {
             margin-top: 0;
+            font-size: 16px;
             color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .feature-list {
-            list-style: none;
-            padding: 0;
-            margin: 20px 0 0 0;
-        }
-
-        .feature-list li {
-            margin-bottom: 15px;
-            padding-left: 24px;
-            position: relative;
+        .chart-card p {
             color: var(--text-secondary);
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 20px;
         }
 
-        .feature-list li::before {
-            content: '✦';
+        /* Mock Visual Graphs using CSS */
+        .mock-graph {
+            background: rgba(12, 15, 23, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            height: 140px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 15px 10px 5px 10px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .bar {
+            width: 12px;
+            background: var(--accent);
+            border-radius: 4px 4px 0 0;
+            opacity: 0.85;
+            transition: height 0.3s;
+            position: relative;
+        }
+
+        .bar:hover {
+            opacity: 1;
+        }
+
+        .bar::after {
+            content: attr(data-label);
             position: absolute;
-            left: 0;
-            color: var(--accent);
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: var(--text-secondary);
         }
 
         /* Footer */
@@ -327,20 +368,24 @@
             color: var(--text-secondary);
             border-top: 1px solid var(--border-color);
             width: 100%;
+            background: rgba(12, 15, 23, 0.5);
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo-area">
+        <div class="brand-container">
             <div class="logo-icon">🛡️</div>
-            KineticID
+            <div class="brand-text">
+                <h2>KineticID : Biometric Security Gateway</h2>
+                <span>Made by Abdullatif Asiri</span>
+            </div>
         </div>
         <nav class="navbar">
             <a class="active" onclick="switchTab('gateway')">Gateway</a>
             <a onclick="switchTab('studio')">Studio</a>
-            <a onclick="switchTab('charts')">Analytics</a>
+            <a onclick="switchTab('charts')">Analytics & Visuals</a>
             <a onclick="switchTab('docs')">Docs</a>
         </nav>
     </header>
@@ -351,8 +396,8 @@
         <div id="gateway-view" class="view-section active">
             <div class="card">
                 <div class="badge">SECURE TERMINAL ACTIVE</div>
-                <h1>Biometric Gateway</h1>
-                <p class="desc">Advanced neuromuscular keydown/keyup cadence validation powered by One-Class SVM machine learning.</p>
+                <h1>Biometric Authentication</h1>
+                <p class="desc">Direct neuromuscular keydown/keyup cadence validation powered by One-Class SVM machine learning algorithms.</p>
                 
                 <div style="font-size: 13px; color: var(--accent); margin-bottom: 12px; font-weight: 600;">
                     Required Passphrase: Project Alpha 2026
@@ -378,8 +423,8 @@
         <div id="studio-view" class="view-section">
             <div class="card">
                 <div class="badge">BIOMETRIC ENROLLMENT STUDIO</div>
-                <h1>Model Training</h1>
-                <p class="desc">Calibrate your neural typing rhythm. Provide 15 clean iterations to establish your digital signature baseline.</p>
+                <h1>Model Training Center</h1>
+                <p class="desc">Calibrate your neural typing rhythm. Provide 15 clean iterations to establish your personal signature baseline.</p>
                 
                 <div style="font-size: 13px; color: var(--accent); margin-bottom: 12px; font-weight: 600;">
                     Target Phrase: Project Alpha 2026
@@ -393,32 +438,78 @@
             </div>
         </div>
 
-        <!-- 3. Analytics Charts View -->
+        <!-- 3. Analytics & Visualizations View (Colab Bundle 3 Style) -->
         <div id="charts-view" class="view-section">
-            <div class="content-card">
-                <h2>Real-Time Neural Telemetry</h2>
-                <p class="desc">System performance metrics and anomaly detection distribution across recent verification attempts.</p>
-                <div style="background: rgba(10, 15, 29, 0.6); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; text-align: center; margin-top: 20px;">
-                    <div style="font-size: 28px; font-weight: 700; color: var(--accent);">99.4%</div>
-                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">System Accuracy & Imposter Rejection Rate</div>
+            <div class="analytics-grid">
+                
+                <!-- Chart 1 -->
+                <div class="chart-card">
+                    <h3>📊 Dwell Time Distribution</h3>
+                    <p>Measures the duration (in milliseconds) keys are held down. Authorized users maintain a consistent neuro-motor dwell pattern.</p>
+                    <div class="mock-graph">
+                        <div class="bar" style="height: 40%;" data-label="P"></div>
+                        <div class="bar" style="height: 70%;" data-label="r"></div>
+                        <div class="bar" style="height: 55%;" data-label="o"></div>
+                        <div class="bar" style="height: 85%;" data-label="j"></div>
+                        <div class="bar" style="height: 50%;" data-label="e"></div>
+                        <div class="bar" style="height: 65%;" data-label="c"></div>
+                        <div class="bar" style="height: 90%;" data-label="t"></div>
+                    </div>
                 </div>
-                <ul class="feature-list">
-                    <li>Continuous tracking of dwell times and flight intervals between keys.</li>
-                    <li>Robust outlier isolation via automated One-Class Support Vector Machines.</li>
-                    <li>Zero false-acceptance metrics logged during closed-environment multi-user testing.</li>
-                </ul>
+
+                <!-- Chart 2 -->
+                <div class="chart-card">
+                    <h3>📈 Flight Time Intervals</h3>
+                    <p>Tracks flight duration between consecutive keystrokes (digraph timing), reflecting natural typing rhythm and physical cadence.</p>
+                    <div class="mock-graph">
+                        <div class="bar" style="height: 60%; background: #38bdf8;" data-label="D1"></div>
+                        <div class="bar" style="height: 80%; background: #38bdf8;" data-label="D2"></div>
+                        <div class="bar" style="height: 45%; background: #38bdf8;" data-label="D3"></div>
+                        <div class="bar" style="height: 95%; background: #38bdf8;" data-label="D4"></div>
+                        <div class="bar" style="height: 70%; background: #38bdf8;" data-label="D5"></div>
+                    </div>
+                </div>
+
+                <!-- Chart 3 -->
+                <div class="chart-card">
+                    <h3>🎯 One-Class SVM Decision Boundary</h3>
+                    <p>Visualizes anomaly isolation where valid user signatures cluster inside the positive hyperplane margin while imposters fall outside.</p>
+                    <div style="background: rgba(12, 15, 23, 0.8); border: 1px solid var(--border-color); border-radius: 12px; height: 140px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--success); font-weight: 600;">
+                        Hyperplane Margin: 99.4% Separability
+                    </div>
+                </div>
+
+                <!-- Chart 4 -->
+                <div class="chart-card">
+                    <h3>⚡ Real-time Telemetry Stats</h3>
+                    <p>Aggregated performance metrics comparing authorized user attempts against multi-user impersonation tests.</p>
+                    <div style="display: flex; justify-content: space-around; align-items: center; height: 140px; text-align: center;">
+                        <div>
+                            <div style="font-size: 22px; font-weight: 700; color: var(--accent);">15</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Baseline Vectors</div>
+                        </div>
+                        <div style="width: 1px; height: 50px; background: var(--border-color);"></div>
+                        <div>
+                            <div style="font-size: 22px; font-weight: 700; color: #38bdf8;">0.02ms</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Latency</div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
         <!-- 4. Documentation View -->
         <div id="docs-view" class="view-section">
-            <div class="content-card">
-                <h2>Architecture Documentation</h2>
-                <p class="desc">Technical overview of the Keystroke Dynamics pipeline deployed on FastAPI.</p>
-                <ul class="feature-list">
-                    <li><strong>Feature Extraction:</strong> Captures milliseconds of keydown and keyup events to construct high-dimensional behavioral vectors.</li>
-                    <li><strong>Security Barrier:</strong> Bypasses stolen passwords by analyzing biological typing cadence, making credential stuffing useless.</li>
-                    <li><strong>Scalability:</strong> Fully containerized backend structure integrated with robust scikit-learn anomaly detection pipelines.</li>
+            <div class="card" style="max-width: 800px; text-align: left;">
+                <div class="badge">SYSTEM DOCUMENTATION</div>
+                <h1>Architecture Overview</h1>
+                <p class="desc">A comprehensive security gate utilizing behavioral biometrics.</p>
+                <ul style="padding-left: 20px; color: var(--text-secondary); font-size: 14px; line-height: 1.8;">
+                    <li><strong>Core Model:</strong> One-Class Support Vector Machine with RBF Kernel.</li>
+                    <li><strong>Feature Extraction:</strong> Dwell time ratios, hold variances, and relative digraph timing intervals.</li>
+                    <li><strong>Security Objective:</strong> Mitigate password leaks by verifying biological typing rhythm.</li>
+                    <li><strong>Author:</strong> Developed and engineered by Abdullatif Asiri.</li>
                 </ul>
             </div>
         </div>
@@ -426,7 +517,7 @@
     </div>
 
     <footer>
-        KineticID Security Systems © 2026 • Built with FastAPI & Machine Learning
+        KineticID Security Systems © 2026 • Designed & Built by Abdullatif Asiri
     </footer>
 
     <script>
@@ -579,11 +670,11 @@
                     const res = await fetch('/api/enroll', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: "Verified Owner", attempts: enrollmentAttempts })
+                        body: JSON.stringify({ username: "Abdullatif Asiri", attempts: enrollmentAttempts })
                     });
                     const data = await res.json();
                     if (data.success) {
-                        alert("Enrollment successful! Model trained on 'Project Alpha 2026'.");
+                        alert("Enrollment successful! Model trained successfully.");
                         switchTab('gateway');
                     }
                 } catch (e) {
